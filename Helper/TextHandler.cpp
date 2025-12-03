@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-std::vector<std::string> TextHandler::loadFile(const std::string& _path) {
+std::vector<std::string> TextHandler::loadFile(const std::string& _path, const char& _delimiter) {
     std::vector<std::string> lines;
 
     std::ifstream file("../" + _path);
@@ -16,7 +16,7 @@ std::vector<std::string> TextHandler::loadFile(const std::string& _path) {
 
     std::string line;
 
-    while(std::getline(file, line)) {
+    while(std::getline(file, line, _delimiter)) {
         lines.push_back(line);
     }
 

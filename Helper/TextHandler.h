@@ -6,5 +6,5 @@
 
 class TextHandler {
     public:
-        static std::vector<std::string> loadFile(const std::string& _path);
+        static std::vector<std::string> loadFile(const std::string& _path, const char& _delimiter = '\n');
 };
