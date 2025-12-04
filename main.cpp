@@ -4,6 +4,6 @@
 #include "Day_2/Day_2.h"
 
 int main() {
-    DayTwo();
+    dayTwo_PartTwo();
     return 0;
 }

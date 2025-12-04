@@ -6,7 +6,7 @@
 
 #include "TextHandler.h"
 
-inline void DayOne() {
+inline void dayOne() {
     int counter = 0;
 
     int currentPos = 50;
