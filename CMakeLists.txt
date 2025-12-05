@@ -8,6 +8,7 @@ add_executable(AoC_25
     Helper/TextHandler.cpp
     Helper/TextHandler.h
     Day_3/Day_3.h
+    Day_4/Day_4.h
 )
 
 target_include_directories(AoC_25 PUBLIC
