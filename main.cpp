@@ -5,6 +5,6 @@
 #include "Day_3/Day_3.h"
 
 int main() {
-    dayThree_PartOne();
+    dayThree_PartTwo();
     return 0;
 }
