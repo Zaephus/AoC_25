@@ -11,6 +11,7 @@ add_executable(AoC_25
     Day_4/Day_4.h
     Day_5/Day_5.h
     Day_6/Day_6.h
+    cmake-build-debug/Day_7.h
 )
 
 target_include_directories(AoC_25 PUBLIC
