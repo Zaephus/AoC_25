@@ -5,8 +5,9 @@
 #include "Day_3/Day_3.h"
 #include "Day_4/Day_4.h"
 #include "Day_5/Day_5.h"
+#include "Day_6/Day_6.h"
 
 int main() {
-    dayFive_PartTwo();
+    daySix_PartOne();
     return 0;
 }
