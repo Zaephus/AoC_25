@@ -8,7 +8,7 @@
 #include "TextHandler.h"
 
 struct Problem {
-    std::vector<int> values;
+    std::vector<long long> values;
     char op = ' ';
 
     [[nodiscard]] long long result() const {
@@ -63,7 +63,7 @@ inline void daySix_PartOne() {
 
             problemCount++;
 
-            int val = std::stoi(part);
+            const int val = std::stoi(part);
 
             if(problems.size() < problemCount) {
                 problems.emplace_back();
@@ -112,5 +112,47 @@ inline void daySix_PartOne() {
 }
 
 inline void daySix_PartTwo() {
+    const std::vector<std::string> lines = TextHandler::loadFile("Day_6/day_6.txt");
 
+    std::vector<Problem> problems;
+    int problemCount = 1;
+
+    const long long length = static_cast<long long>(lines[0].length());
+
+    for(long long j = length; j >= 0; j--) {
+        std::string num;
+        char op = ' ';
+        for(std::string line : lines) {
+            const char c = line[j];
+            if(c == '+' || c == '*') {
+                op = c;
+            }
+            else if(c != ' ' && c != '\0') {
+                num += c;
+            }
+        }
+
+        if(num.empty()) {
+            problemCount++;
+            continue;
+        }
+
+        if(problems.size() < problemCount) {
+            problems.emplace_back();
+        }
+
+        const long long val = std::stoll(num);
+
+        problems[problemCount-1].values.push_back(val);
+        problems[problemCount-1].op = op;
+    }
+
+    long long total = 0;
+
+    for(const Problem& problem : problems) {
+        const long long result = problem.result();
+        total += result;
+    }
+
+    std::cout << "Total is: " << total << std::endl;
 }
