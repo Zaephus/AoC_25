@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,7 @@ struct Vector3 {
     long long y = 0;
     long long z = 0;
 
-    std::vector<Vector3> connections;
+    std::vector<int> connections;
 
     [[nodiscard]] long long sqrMag() const {
         return x*x + y*y + z*z;
@@ -34,6 +35,17 @@ struct Vector3 {
     bool operator!=(const Vector3& _v) const {
         return this != &_v;
     }
+};
+
+struct Connection {
+    int vecA = -1;
+    int vecB = -1;
+
+    long long dist = 0;
+};
+
+struct Circuit {
+    std::vector<int> containingPositions;
 };
 
 inline std::vector<Vector3> processTextToVectors(const std::vector<std::string>& _lines) {
@@ -76,9 +88,13 @@ inline std::vector<Vector3> processTextToVectors(const std::vector<std::string>&
     return positions;
 }
 
+inline int findConnections()
+
 inline void dayEight_PartOne() {
     const std::vector<std::string> lines = TextHandler::loadFile("Day_8/day_8.txt");
     std::vector<Vector3> positions = processTextToVectors(lines);
+
+    std::vector<Connection> connections;
 
     for(int i = 0; i < positions.size(); i++) {
         long long smallestDist = LLONG_MAX;
@@ -87,7 +103,16 @@ inline void dayEight_PartOne() {
         for(int j = 0; j < positions.size(); j++) {
             if(i == j) { continue; }
 
-            if(std::count(positions[i].connections.begin(), positions[i].connections.end(), positions[j]) != 0) {
+            // Check if connection already exists
+            bool conFound = false;
+            for(const Connection& con : connections) {
+                if((con.vecA == i && con.vecB == j) || (con.vecA == j && con.vecB == i)) {
+                    conFound = true;
+                    break;
+                }
+            }
+
+            if(conFound) {
                 continue;
             }
 
@@ -101,19 +126,51 @@ inline void dayEight_PartOne() {
 
         if(closestNeighbour < 0) { std::cerr << "Somehow no closest neighbour was found!" << std::endl; }
 
-        positions[closestNeighbour].connections.push_back(positions[i]);
-        positions[i].connections.push_back(positions[closestNeighbour]);
+        Connection connection;
+        connection.vecA = i;
+        connection.vecB = closestNeighbour;
+        connection.dist = smallestDist;
+
+        connections.push_back(connection);
     }
 
-    for(const Vector3& vec : positions) {
-        std::cout << vec.x << ", " << vec.y << ", " << vec.z << std::endl;
-        std::cout << " Connection amount: " << vec.connections.size() << std::endl;
-        std::cout << " Connected with:" << std::endl;
+    std::vector<int> shortestConIndices;
 
-        for(const Vector3& con : vec.connections) {
-            std::cout << " " << con.x << ", " << con.y << ", " << con.z << std::endl;
+    while(shortestConIndices.size() != 10) {
+        int conIndex = -1;
+        long long shortestDist = LLONG_MAX;
+
+        for(int i = 0; i < connections.size(); i++) {
+            if(std::count(shortestConIndices.begin(), shortestConIndices.end(), i) != 0) {
+                continue;
+            }
+
+            if(connections[i].dist < shortestDist) {
+                conIndex = i;
+                shortestDist = connections[i].dist;
+            }
+        }
+
+        shortestConIndices.push_back(conIndex);
+    }
+
+    std::cout << "Shortest connections: " << std::endl;
+    for(int i = 0; i < shortestConIndices.size(); i++) {
+        std::cout << connections[i].vecA << " - " << connections[i].vecB << ": " << connections[i].dist << std::endl;
+
+        positions[connections[i].vecA].connections.push_back(connections[i].vecB);
+        positions[connections[i].vecB].connections.push_back(connections[i].vecA);
+    }
+
+    std::vector<Circuit> circuits;
+
+    for(int i = 0; i < positions.size(); i++) {
+
+        for(const Circuit& circuit : circuits) {
+            if()
         }
     }
+
 }
 
 inline void dayEight_PartTwo() {
