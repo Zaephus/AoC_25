@@ -104,7 +104,6 @@ inline std::vector<Vector3> processTextToVectors(const std::vector<std::string>&
 }
 
 inline void dayEight_PartOne() {
-
     std::cout << "Parsing positions" << std::endl;
     const std::vector<Vector3> positions = processTextToVectors(TextHandler::loadFile("Day_8/day_8.txt"));
 
@@ -213,17 +212,96 @@ inline void dayEight_PartOne() {
     }
 
     std::cout << "Total is: " << total << std::endl;
-
-    // std::cout << std::endl << "Circuits after processing:" << std::endl;
-    // for(const Circuit& c : circuits) {
-    //     std::cout << " contains:" << std::endl;
-    //     for(const int& i : c.junctions) {
-    //         std::cout << "  " << i << std::endl;
-    //     }
-    //     std::cout << std::endl;
-    // }
 }
 
 inline void dayEight_PartTwo() {
+    std::cout << "Parsing positions" << std::endl;
+    const std::vector<Vector3> positions = processTextToVectors(TextHandler::loadFile("Day_8/day_8.txt"));
 
+    std::cout << "Finding possible connections" << std::endl;
+    std::map<long long, Connection> connections;
+
+    for(int i = 0; i < positions.size(); i++) {
+        for(int j = i+1; j < positions.size(); j++) {
+            long long dist = positions[i].sqrDist(positions[j]);
+
+            if(connections.contains(dist)) {
+                std::cout << "Already contained" << std::endl;
+                dist++;
+            }
+
+            const Connection con(i, j);
+            connections[dist] = con;
+        }
+    }
+
+    std::cout << "Making circuits" << std::endl;
+    std::vector<Circuit> circuits;
+
+    long long lastConnectionProduct = 0;
+
+    for(auto [_dist, _con] : connections) {
+        if(!circuits.empty()) {
+            if(circuits[0].junctions.size() == positions.size()) {
+                break;
+            }
+        }
+
+        bool addedToExistingCircuit = false;
+
+        int circuitContainingA = -1;
+        int circuitContainingB = -1;
+
+        lastConnectionProduct = positions[_con.junctionA].x * positions[_con.junctionB].x;
+
+        for(int i = 0; i < circuits.size(); i++) {
+            if(circuits[i].contains(_con.junctionA) && circuits[i].contains(_con.junctionB)) {
+                addedToExistingCircuit = true;
+                break;
+            }
+
+            if(circuits[i].contains(_con.junctionA)) {
+                circuitContainingA = i;
+                addedToExistingCircuit = true;
+            }
+
+            if(circuits[i].contains(_con.junctionB)) {
+                circuitContainingB = i;
+                addedToExistingCircuit = true;
+            }
+        }
+
+        if(addedToExistingCircuit) {
+            if(circuitContainingA != -1 && circuitContainingB == -1) {
+                circuits[circuitContainingA].junctions.push_back(_con.junctionB);
+            }
+            if(circuitContainingB != -1 && circuitContainingA == -1) {
+                circuits[circuitContainingB].junctions.push_back(_con.junctionA);
+            }
+            if(circuitContainingA != -1 && circuitContainingB != -1) {
+                if(circuits[circuitContainingA].junctions.size() >= circuits[circuitContainingB].junctions.size()) {
+                    for(const int& junctionInB : circuits[circuitContainingB].junctions) {
+                        circuits[circuitContainingA].junctions.push_back(junctionInB);
+                    }
+                    circuits.erase(circuits.begin() + circuitContainingB);
+                }
+                else {
+                    for(const int& junctionInA : circuits[circuitContainingA].junctions) {
+                        circuits[circuitContainingB].junctions.push_back(junctionInA);
+                    }
+                    circuits.erase(circuits.begin() + circuitContainingA);
+                }
+            }
+
+        }
+        else {
+            Circuit circuit;
+            circuit.junctions.push_back(_con.junctionA);
+            circuit.junctions.push_back(_con.junctionB);
+
+            circuits.push_back(circuit);
+        }
+    }
+
+    std::cout << std::endl << "Product of last connection is " << lastConnectionProduct << std::endl;
 }

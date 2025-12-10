@@ -10,6 +10,6 @@
 #include "Day_8/Day_8.h"
 
 int main() {
-    dayEight_PartOne();
+    dayEight_PartTwo();
     return 0;
 }
