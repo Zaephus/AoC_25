@@ -14,8 +14,6 @@ struct Vector3 {
     long long y = 0;
     long long z = 0;
 
-    std::vector<int> connections;
-
     [[nodiscard]] long long sqrMag() const {
         return x*x + y*y + z*z;
     }
@@ -38,14 +36,31 @@ struct Vector3 {
 };
 
 struct Connection {
-    int vecA = -1;
-    int vecB = -1;
+    int junctionA = -1;
+    int junctionB = -1;
 
-    long long dist = 0;
+    Connection() {
+        junctionA = -1;
+        junctionB = -1;
+    }
+    Connection(const int _a, const int _b) {
+        junctionA = _a;
+        junctionB = _b;
+    }
 };
 
 struct Circuit {
-    std::vector<int> containingPositions;
+    std::vector<int> junctions;
+
+    [[nodiscard]] bool contains(const int _index) const {
+        for(const int& junction : junctions) {
+            if(junction == _index) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 };
 
 inline std::vector<Vector3> processTextToVectors(const std::vector<std::string>& _lines) {
@@ -88,89 +103,125 @@ inline std::vector<Vector3> processTextToVectors(const std::vector<std::string>&
     return positions;
 }
 
-inline int findConnections()
-
 inline void dayEight_PartOne() {
-    const std::vector<std::string> lines = TextHandler::loadFile("Day_8/day_8.txt");
-    std::vector<Vector3> positions = processTextToVectors(lines);
 
-    std::vector<Connection> connections;
+    std::cout << "Parsing positions" << std::endl;
+    const std::vector<Vector3> positions = processTextToVectors(TextHandler::loadFile("Day_8/day_8.txt"));
+
+    std::cout << "Finding connections" << std::endl;
+    std::map<long long, Connection> connections;
 
     for(int i = 0; i < positions.size(); i++) {
-        long long smallestDist = LLONG_MAX;
-        int closestNeighbour = -1;
+        for(int j = i+1; j < positions.size(); j++) {
+            long long dist = positions[i].sqrDist(positions[j]);
 
-        for(int j = 0; j < positions.size(); j++) {
-            if(i == j) { continue; }
-
-            // Check if connection already exists
-            bool conFound = false;
-            for(const Connection& con : connections) {
-                if((con.vecA == i && con.vecB == j) || (con.vecA == j && con.vecB == i)) {
-                    conFound = true;
-                    break;
-                }
+            if(connections.contains(dist)) {
+                std::cout << "Already contained" << std::endl;
+                dist++;
             }
 
-            if(conFound) {
-                continue;
-            }
-
-            const long long dist = positions[i].sqrDist(positions[j]);
-
-            if(dist < smallestDist) {
-                smallestDist = dist;
-                closestNeighbour = j;
-            }
+            const Connection con(i, j);
+            connections[dist] = con;
         }
-
-        if(closestNeighbour < 0) { std::cerr << "Somehow no closest neighbour was found!" << std::endl; }
-
-        Connection connection;
-        connection.vecA = i;
-        connection.vecB = closestNeighbour;
-        connection.dist = smallestDist;
-
-        connections.push_back(connection);
     }
 
-    std::vector<int> shortestConIndices;
+    connections.erase(std::next(connections.begin(), 1000), connections.end());
 
-    while(shortestConIndices.size() != 10) {
-        int conIndex = -1;
-        long long shortestDist = LLONG_MAX;
-
-        for(int i = 0; i < connections.size(); i++) {
-            if(std::count(shortestConIndices.begin(), shortestConIndices.end(), i) != 0) {
-                continue;
-            }
-
-            if(connections[i].dist < shortestDist) {
-                conIndex = i;
-                shortestDist = connections[i].dist;
-            }
-        }
-
-        shortestConIndices.push_back(conIndex);
-    }
-
-    std::cout << "Shortest connections: " << std::endl;
-    for(int i = 0; i < shortestConIndices.size(); i++) {
-        std::cout << connections[i].vecA << " - " << connections[i].vecB << ": " << connections[i].dist << std::endl;
-
-        positions[connections[i].vecA].connections.push_back(connections[i].vecB);
-        positions[connections[i].vecB].connections.push_back(connections[i].vecA);
-    }
-
+    std::cout << "Making circuits" << std::endl;
     std::vector<Circuit> circuits;
 
-    for(int i = 0; i < positions.size(); i++) {
+    for(auto [dist, con] : connections) {
+        bool addedToExistingCircuit = false;
 
-        for(const Circuit& circuit : circuits) {
-            if()
+        int circuitContainingA = -1;
+        int circuitContainingB = -1;
+
+        for(int i = 0; i < circuits.size(); i++) {
+            if(circuits[i].contains(con.junctionA) && circuits[i].contains(con.junctionB)) {
+                addedToExistingCircuit = true;
+                break;
+            }
+
+            if(circuits[i].contains(con.junctionA)) {
+                circuitContainingA = i;
+                addedToExistingCircuit = true;
+            }
+
+            if(circuits[i].contains(con.junctionB)) {
+                circuitContainingB = i;
+                addedToExistingCircuit = true;
+            }
+        }
+
+        if(addedToExistingCircuit) {
+            if(circuitContainingA != -1 && circuitContainingB == -1) {
+                circuits[circuitContainingA].junctions.push_back(con.junctionB);
+            }
+            if(circuitContainingB != -1 && circuitContainingA == -1) {
+                circuits[circuitContainingB].junctions.push_back(con.junctionA);
+            }
+            if(circuitContainingA != -1 && circuitContainingB != -1) {
+                if(circuits[circuitContainingA].junctions.size() >= circuits[circuitContainingB].junctions.size()) {
+                    for(const int& junctionInB : circuits[circuitContainingB].junctions) {
+                        circuits[circuitContainingA].junctions.push_back(junctionInB);
+                    }
+                    circuits.erase(circuits.begin() + circuitContainingB);
+                }
+                else {
+                    for(const int& junctionInA : circuits[circuitContainingA].junctions) {
+                        circuits[circuitContainingB].junctions.push_back(junctionInA);
+                    }
+                    circuits.erase(circuits.begin() + circuitContainingA);
+                }
+            }
+        }
+        else {
+            Circuit circuit;
+            circuit.junctions.push_back(con.junctionA);
+            circuit.junctions.push_back(con.junctionB);
+
+            circuits.push_back(circuit);
         }
     }
 
+    std::cout << "Finding three largest circuits" << std::endl;
+
+    std::vector<int> largestCircuits;
+
+    while(largestCircuits.size() != 3) {
+        int largestCircuitIndex;
+        int largestSize = 0;
+
+        for(int i = 0; i < circuits.size(); i++) {
+            if(std::count(largestCircuits.begin(), largestCircuits.end(), i) != 0) { continue; }
+
+            if(circuits[i].junctions.size() > largestSize) {
+                largestSize = circuits[i].junctions.size();
+                largestCircuitIndex = i;
+            }
+        }
+
+        largestCircuits.push_back(largestCircuitIndex);
+    }
+
+    std::cout << "Calculating total" << std::endl;
+    long long total = 1;
+
+    for(const int largestCircuit : largestCircuits) {
+        const long long size = static_cast<long long>(circuits[largestCircuit].junctions.size());
+        total *= size;
+    }
+
+    std::cout << "Total is: " << total << std::endl;
+
+    // std::cout << std::endl << "Circuits after processing:" << std::endl;
+    // for(const Circuit& c : circuits) {
+    //     std::cout << " contains:" << std::endl;
+    //     for(const int& i : c.junctions) {
+    //         std::cout << "  " << i << std::endl;
+    //     }
+    //     std::cout << std::endl;
+    // }
 }
 
 inline void dayEight_PartTwo() {
