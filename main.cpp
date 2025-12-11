@@ -11,6 +11,6 @@
 #include "Day_9/Day_9.h"
 
 int main() {
-    dayNine_PartOne();
+    dayNine_PartTwo();
     return 0;
 }

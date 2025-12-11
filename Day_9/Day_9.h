@@ -72,5 +72,29 @@ inline void dayNine_PartOne() {
 }
 
 inline void dayNine_PartTwo() {
+    const std::vector<Vector2> redTiles = processTextToVector2(TextHandler::loadFile("Day_9/day_9.txt"));
 
+    long long area = 0;
+
+    for(int i = 0; i < redTiles.size(); i++) {
+        for(int j = 0; j < redTiles.size(); j++) {
+            if(i == j) { continue; }
+
+            if(redTiles[i].x != redTiles[j].x) {
+                continue;
+            }
+
+            for(int k = 0; k < redTiles.size(); k++) {
+                if(k == j || k == i) { continue; }
+
+                if(redTiles[k].y != redTiles[i].y && redTiles[k].y != redTiles[j].y) {
+                    continue;
+                }
+
+                
+            }
+        }
+    }
+
+    std::cout << "Area is " << area << std::endl;
 }
