@@ -8,8 +8,9 @@
 #include "Day_6/Day_6.h"
 #include "Day_7/Day_7.h"
 #include "Day_8/Day_8.h"
+#include "Day_9/Day_9.h"
 
 int main() {
-    dayEight_PartTwo();
+    dayNine_PartOne();
     return 0;
 }
